@@ -1,0 +1,73 @@
+<% active_tab = assigns[:active_tab] || :dashboard %>
+<div class="min-h-full">
+  <!-- Navigation -->
+  <nav class="bg-white shadow-sm border-b border-gray-200">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="flex h-16 justify-between">
+        <div class="flex">
+          <div class="flex flex-shrink-0 items-center">
+            <span class="text-2xl font-bold text-red-600" aria-label="HAL Dashboard">HAL</span>
+          </div>
+          <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+            <.styled_link
+              navigate={~p"/"}
+              class={"inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium #{if active_tab == :dashboard, do: "border-red-500 text-gray-900", else: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"}"}
+            >
+              <.icon name="hero-home" class="mr-2 h-5 w-5" />
+              Dashboard
+            </.styled_link>
+            <.styled_link
+              navigate={~p"/sessions"}
+              class={"inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium #{if active_tab == :sessions, do: "border-red-500 text-gray-900", else: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"}"}
+            >
+              <.icon name="hero-inbox-stack" class="mr-2 h-5 w-5" />
+              Sessions
+            </.styled_link>
+          </div>
+        </div>
+        <div class="hidden sm:ml-6 sm:flex sm:items-center">
+          <div class="flex items-center space-x-4">
+            <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+              <span class="mr-1.5 h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+              Connected
+            </span>
+          </div>
+        </div>
+        <!-- Mobile menu button -->
+        <div class="flex items-center sm:hidden">
+          <button type="button" class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500" aria-controls="mobile-menu" aria-expanded="false">
+            <span class="sr-only">Open main menu</span>
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div class="sm:hidden hidden" id="mobile-menu">
+      <div class="space-y-1 pt-2 pb-3">
+        <.styled_link
+          navigate={~p"/"}
+          class={"block border-l-4 py-2 pl-3 pr-4 text-base font-medium #{if active_tab == :dashboard, do: "border-red-500 bg-red-50 text-red-700", else: "border-transparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700"}"}
+        >
+          Dashboard
+        </.styled_link>
+        <.styled_link
+          navigate={~p"/sessions"}
+          class={"block border-l-4 py-2 pl-3 pr-4 text-base font-medium #{if active_tab == :sessions, do: "border-red-500 bg-red-50 text-red-700", else: "border-transparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700"}"}
+        >
+          Sessions
+        </.styled_link>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
+      <.flash_group flash={@flash} />
+      {@inner_content}
+    </div>
+  </main>
+</div>

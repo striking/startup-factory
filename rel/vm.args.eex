@@ -1,0 +1,51 @@
+## HAL VM Arguments
+## These are evaluated at runtime when the release starts
+
+## Name of the node
+-name <%= @release.name %>@127.0.0.1
+
+## Cookie for distributed Erlang (uses RELEASE_COOKIE env var)
+-setcookie ${RELEASE_COOKIE}
+
+## Enable SMP automatically based on cores
+-smp auto
+
+## Increase async thread pool for better I/O performance
++A 64
+
+## Set the max number of processes
++P 1048576
+
+## Set the max number of ports
++Q 65536
+
+## Scheduler settings for better latency
+## +sbwt very_short: wake scheduler threads quickly
+## +swct very_eager: compact scheduler threads eagerly
++sbwt very_short
++swct very_eager
+
+## Memory allocator settings
++MBas ageffcbf
++MHas ageffcbf
+
+## Kernel inet settings
+-kernel inet_dist_listen_min 9100 inet_dist_listen_max 9200
+
+## Enable heart for automatic restarts if the node becomes unresponsive
+-heart
+
+## Heartbeat timeout (30 seconds)
+-env HEART_BEAT_TIMEOUT 30
+
+## Command to restart if heart detects no response
+-env HEART_COMMAND "${RELEASE_ROOT}/bin/hal start"
+
+## Increase distribution buffer size for large messages
++zdbbl 32768
+
+## Enable kernel poll for better performance on macOS
++K true
+
+## Disable kernel inet_dist_use_interface binding
+-kernel inet_dist_use_interface {0,0,0,0}

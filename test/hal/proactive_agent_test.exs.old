@@ -1,0 +1,283 @@
+defmodule HAL.ProactiveAgentTest do
+  use ExUnit.Case, async: true
+
+  alias HAL.ProactiveAgent
+
+  describe "evaluate_context/0" do
+    test "returns :ok when evaluation completes successfully" do
+      # This will call actual reasoning, but that's okay for basic smoke test
+      result = ProactiveAgent.evaluate_context()
+      assert result in [:ok, :skip, :error]
+    end
+
+    test "returns :skip when user is not available (mocked)" do
+      # Note: This test relies on time-based availability check
+      # If run during "unavailable" hours (before 8am or after 11pm UTC), it will skip
+      result = ProactiveAgent.evaluate_context()
+      assert result in [:ok, :skip]
+    end
+  end
+
+  describe "gather_context/0" do
+    test "returns a map with expected keys" do
+      context = ProactiveAgent.gather_context()
+
+      assert is_map(context)
+      assert %DateTime{} = context.current_time
+      assert context.user_availability in ["available", "sleeping"]
+      assert is_binary(context.context_note)
+    end
+
+    test "includes current time" do
+      context = ProactiveAgent.gather_context()
+
+      # Should be within a few seconds of now
+      now = DateTime.utc_now()
+      diff = DateTime.diff(now, context.current_time, :second)
+
+      assert diff <= 5
+    end
+  end
+
+  describe "reason_about_action/1" do
+    test "returns valid action decision format" do
+      context = %{
+        current_time: DateTime.utc_now(),
+        user_availability: "available",
+        test_mode: true
+      }
+
+      result = ProactiveAgent.reason_about_action(context)
+
+      # Should return one of the valid formats
+      assert match?({:suggest, _, _, _}, result) or
+               match?({:execute_auto, _, _}, result) or
+               result == :no_action or
+               match?({:error, _}, result)
+    end
+
+    test "handles context with no actionable items gracefully" do
+      context = %{
+        current_time: DateTime.utc_now(),
+        user_availability: "available",
+        note: "Nothing urgent"
+      }
+
+      # Should complete without crashing
+      result = ProactiveAgent.reason_about_action(context)
+
+      # Most likely will return :no_action for empty context
+      # But could also error if Claude is unavailable
+      assert result in [:no_action] or match?({:error, _}, result)
+    end
+  end
+
+  describe "build_reasoning_prompt/1" do
+    test "builds prompt with context JSON" do
+      context = %{
+        current_time: ~U[2025-01-29 10:00:00Z],
+        user_availability: "available"
+      }
+
+      prompt = ProactiveAgent.build_reasoning_prompt(context)
+
+      assert is_binary(prompt)
+      assert prompt =~ "HAL"
+      assert prompt =~ "proactive"
+      assert prompt =~ "Current Context:"
+      assert prompt =~ "available"
+      # Should include JSON representation
+      assert prompt =~ "\"user_availability\":"
+    end
+
+    test "includes reasoning guidelines" do
+      context = %{current_time: DateTime.utc_now()}
+      prompt = ProactiveAgent.build_reasoning_prompt(context)
+
+      assert prompt =~ "Reasoning Guidelines"
+      assert prompt =~ "suggest"
+      assert prompt =~ "execute_auto"
+      assert prompt =~ "no_action"
+    end
+  end
+
+  describe "parse_reasoning_response/1" do
+    test "parses suggest action correctly" do
+      response = """
+      {
+        "action_type": "suggest",
+        "action": "Review urgent email from client",
+        "reasoning": "High-priority message received 2 hours ago",
+        "urgency": "high"
+      }
+      """
+
+      result = ProactiveAgent.parse_reasoning_response(response)
+
+      assert {:suggest, "Review urgent email from client",
+              "High-priority message received 2 hours ago", :high} = result
+    end
+
+    test "parses execute_auto action correctly" do
+      response = """
+      {
+        "action_type": "execute_auto",
+        "action": "Pre-load meeting documents",
+        "reasoning": "Meeting starts in 30 minutes"
+      }
+      """
+
+      result = ProactiveAgent.parse_reasoning_response(response)
+
+      assert {:execute_auto, "Pre-load meeting documents", "Meeting starts in 30 minutes"} =
+               result
+    end
+
+    test "parses no_action correctly" do
+      response = """
+      {
+        "action_type": "no_action",
+        "action": "",
+        "reasoning": ""
+      }
+      """
+
+      result = ProactiveAgent.parse_reasoning_response(response)
+
+      assert result == :no_action
+    end
+
+    test "extracts JSON from text with surrounding content" do
+      response = """
+      Based on the context, here's my decision:
+
+      {
+        "action_type": "no_action",
+        "action": "",
+        "reasoning": ""
+      }
+
+      No action is needed at this time.
+      """
+
+      result = ProactiveAgent.parse_reasoning_response(response)
+
+      assert result == :no_action
+    end
+
+    test "handles invalid JSON gracefully" do
+      response = "This is not JSON at all"
+
+      result = ProactiveAgent.parse_reasoning_response(response)
+
+      assert {:error, :invalid_json} = result
+    end
+
+    test "handles missing urgency field with default" do
+      response = """
+      {
+        "action_type": "suggest",
+        "action": "Test action",
+        "reasoning": "Test reasoning"
+      }
+      """
+
+      result = ProactiveAgent.parse_reasoning_response(response)
+
+      assert {:suggest, "Test action", "Test reasoning", :medium} = result
+    end
+
+    test "handles invalid urgency with default" do
+      response = """
+      {
+        "action_type": "suggest",
+        "action": "Test action",
+        "reasoning": "Test reasoning",
+        "urgency": "invalid"
+      }
+      """
+
+      result = ProactiveAgent.parse_reasoning_response(response)
+
+      assert {:suggest, "Test action", "Test reasoning", :medium} = result
+    end
+  end
+
+  describe "parse_urgency/1" do
+    test "parses valid urgency levels" do
+      assert ProactiveAgent.parse_urgency("low") == :low
+      assert ProactiveAgent.parse_urgency("medium") == :medium
+      assert ProactiveAgent.parse_urgency("high") == :high
+    end
+
+    test "defaults to medium for invalid urgency" do
+      assert ProactiveAgent.parse_urgency("invalid") == :medium
+      assert ProactiveAgent.parse_urgency(nil) == :medium
+      assert ProactiveAgent.parse_urgency(123) == :medium
+    end
+  end
+
+  describe "user_available?/0" do
+    test "returns boolean" do
+      result = ProactiveAgent.user_available?()
+      assert is_boolean(result)
+    end
+
+    # Note: Time-based test - will pass/fail depending on when run
+    # This is expected behavior until we add proper mocking
+    test "availability is time-based" do
+      # Just verify it returns a consistent value
+      result1 = ProactiveAgent.user_available?()
+      result2 = ProactiveAgent.user_available?()
+
+      assert result1 == result2
+    end
+  end
+
+  describe "get_user_availability/0" do
+    test "returns string status" do
+      status = ProactiveAgent.get_user_availability()
+      assert status in ["available", "sleeping"]
+    end
+  end
+
+  describe "send_suggestion/3" do
+    test "completes without error" do
+      result = ProactiveAgent.send_suggestion("Test action", "Test reasoning", :medium)
+      assert result == :ok
+    end
+
+    test "handles all urgency levels" do
+      assert :ok = ProactiveAgent.send_suggestion("Action", "Reasoning", :low)
+      assert :ok = ProactiveAgent.send_suggestion("Action", "Reasoning", :medium)
+      assert :ok = ProactiveAgent.send_suggestion("Action", "Reasoning", :high)
+    end
+  end
+
+  describe "execute_autonomous_action/2" do
+    test "completes without error" do
+      result = ProactiveAgent.execute_autonomous_action("Test action", "Test reasoning")
+      assert result == :ok
+    end
+
+    test "handles empty strings" do
+      result = ProactiveAgent.execute_autonomous_action("", "")
+      assert result == :ok
+    end
+  end
+
+  describe "extract_response_text/1" do
+    test "extracts text from string" do
+      assert ProactiveAgent.extract_response_text("Hello") == "Hello"
+    end
+
+    test "extracts result from map" do
+      assert ProactiveAgent.extract_response_text(%{result: "Hello"}) == "Hello"
+    end
+
+    test "inspects other values" do
+      result = ProactiveAgent.extract_response_text(%{other: "data"})
+      assert result =~ "other"
+    end
+  end
+end

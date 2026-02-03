@@ -1,0 +1,23 @@
+{
+  "name": "hal-agent-sdk-bridge",
+  "version": "1.0.0",
+  "description": "Bridge between Elixir Port and Claude Agent SDK",
+  "type": "module",
+  "main": "dist/bridge.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/bridge.js",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.1.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

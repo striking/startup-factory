@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  HAL Launchd Service Configuration Template
+
+  This file is a TEMPLATE. The deploy.sh script will generate the actual plist
+  with the correct paths for your system.
+
+  Manual Installation:
+  1. Copy this file to ~/Library/LaunchAgents/com.hal.assistant.plist
+  2. Replace USERNAME with your actual username
+  3. Replace /path/to/hal with the actual project path
+  4. Run: launchctl load ~/Library/LaunchAgents/com.hal.assistant.plist
+
+  To unload: launchctl unload ~/Library/LaunchAgents/com.hal.assistant.plist
+-->
+<plist version="1.0">
+<dict>
+    <!-- Service identifier - must match filename -->
+    <key>Label</key>
+    <string>com.hal.assistant</string>
+
+    <!-- Program to run -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/path/to/hal/_build/prod/rel/hal/bin/hal</string>
+        <string>start</string>
+    </array>
+
+    <!-- Start automatically when user logs in -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- Restart policy - restart on non-zero exit -->
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+
+    <!-- Minimum time between restarts (seconds) -->
+    <key>ThrottleInterval</key>
+    <integer>10</integer>
+
+    <!-- Log files -->
+    <key>StandardOutPath</key>
+    <string>/Users/USERNAME/Library/Logs/hal/stdout.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/USERNAME/Library/Logs/hal/stderr.log</string>
+
+    <!-- Working directory -->
+    <key>WorkingDirectory</key>
+    <string>/path/to/hal</string>
+
+    <!-- Environment variables -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <!-- Home directory for Claude CLI authentication -->
+        <key>HOME</key>
+        <string>/Users/USERNAME</string>
+
+        <!-- Path including common tool locations -->
+        <key>PATH</key>
+        <string>/Users/USERNAME/.local/bin:/Users/USERNAME/.npm-global/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+
+        <!-- Encoding -->
+        <key>LANG</key>
+        <string>en_US.UTF-8</string>
+
+        <!-- Enable Phoenix server -->
+        <key>PHX_SERVER</key>
+        <string>true</string>
+    </dict>
+
+    <!-- Resource limits for production -->
+    <key>SoftResourceLimits</key>
+    <dict>
+        <key>NumberOfFiles</key>
+        <integer>65536</integer>
+    </dict>
+
+    <key>HardResourceLimits</key>
+    <dict>
+        <key>NumberOfFiles</key>
+        <integer>65536</integer>
+    </dict>
+
+    <!-- Optional: Run on schedule (cron-like) -->
+    <!-- Uncomment to run at specific times instead of continuously -->
+    <!--
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>9</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+    -->
+
+    <!-- Optional: Network state trigger -->
+    <!-- Uncomment to wait for network before starting -->
+    <!--
+    <key>Sockets</key>
+    <dict>
+        <key>Listeners</key>
+        <dict>
+            <key>SockServiceName</key>
+            <string>4000</string>
+            <key>SockType</key>
+            <string>stream</string>
+            <key>SockFamily</key>
+            <string>IPv4</string>
+        </dict>
+    </dict>
+    -->
+</dict>
+</plist>
