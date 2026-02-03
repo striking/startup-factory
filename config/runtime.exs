@@ -112,17 +112,17 @@ config :hal, Hal.AI.Gemini,
   api_key: System.get_env("GEMINI_API_KEY") || System.get_env("GOOGLE_API_KEY"),
   model: System.get_env("GEMINI_MODEL") || "gemini-2.5-flash"
 
-# Configure OpenAI (GPT-4, GPT-3.5-turbo)
+# Configure OpenAI (GPT-5.2 - migrated from GPT-4 Feb 2026)
 config :hal, Hal.AI.OpenAI,
   api_key: System.get_env("OPENAI_API_KEY"),
-  model: System.get_env("OPENAI_MODEL") || "gpt-4-turbo-preview",
+  model: System.get_env("OPENAI_MODEL") || "gpt-5.2",
   temperature: 0.7,
   max_tokens: 4096
 
 # Configure Codex (OpenAI) - optional
 config :hal, Hal.AI.Codex,
   api_key: System.get_env("OPENAI_API_KEY"),
-  model: System.get_env("OPENAI_MODEL") || "gpt-4"
+  model: System.get_env("OPENAI_MODEL") || "gpt-5.2"
 
 # Configure AI Router
 # enable_routing: true enables intelligent provider selection
