@@ -14,7 +14,7 @@ defmodule Factory.Pipeline do
   use GenServer
   require Logger
 
-  alias Factory.{Experiment, Wallet, Critic}
+  alias Factory.{Experiment, Wallet, Critic, Ideator}
 
   @check_interval_ms 60_000  # Check every minute
   @max_concurrent_experiments 3
@@ -55,6 +55,19 @@ defmodule Factory.Pipeline do
   @doc "Resume the pipeline"
   def resume do
     GenServer.call(__MODULE__, :resume)
+  end
+
+  @doc """
+  Run full ideation pipeline from a pain point.
+  
+  1. Ideator generates multiple solution approaches
+  2. Critic evaluates each solution
+  3. Top passing solution becomes an experiment
+  
+  Returns {:ok, experiment_id} or {:error, reason}
+  """
+  def ideate_and_experiment(pain_point, opts \\ []) do
+    GenServer.call(__MODULE__, {:ideate, pain_point, opts}, 30_000)
   end
 
   @doc "Manually trigger next experiment"
@@ -113,6 +126,75 @@ defmodule Factory.Pipeline do
       
       {:error, reason} ->
         {:reply, {:error, reason}, state}
+    end
+  end
+
+  @impl true
+  def handle_call({:ideate, pain_point, opts}, _from, state) do
+    target_audience = Keyword.get(opts, :target_audience)
+    
+    Logger.info("[Pipeline] Starting ideation for: #{String.slice(pain_point, 0, 50)}...")
+    
+    # Step 1: Generate solution approaches
+    case Ideator.ideate(pain_point, target_audience: target_audience) do
+      {:ok, ideation_result} ->
+        Logger.info("[Pipeline] Generated #{length(ideation_result.solutions)} solutions")
+        
+        # Step 2: Run each through Critic, find first that passes
+        passing_solution = ideation_result.solutions
+        |> Enum.find(fn solution ->
+          hypothesis = "#{solution.name}: #{solution.description}"
+          
+          case Critic.evaluate(hypothesis,
+                 target_audience: target_audience,
+                 problem: pain_point,
+                 solution: solution.description) do
+            {:ok, %{pass: true, score: score}} ->
+              Logger.info("[Pipeline] Solution '#{solution.name}' passed with score #{score}")
+              true
+            {:ok, %{pass: false, score: score}} ->
+              Logger.info("[Pipeline] Solution '#{solution.name}' failed with score #{score}")
+              false
+            _ ->
+              false
+          end
+        end)
+        
+        # Step 3: Create experiment from passing solution
+        case passing_solution do
+          nil ->
+            {:reply, {:error, "No solutions passed Critic evaluation"}, state}
+          
+          solution ->
+            hypothesis = "#{solution.name}: #{solution.description}"
+            
+            case Experiment.create(hypothesis,
+                   target_audience: target_audience,
+                   problem: pain_point,
+                   solution: solution.description,
+                   name: solution.name) do
+              {:ok, pid} ->
+                experiment = Experiment.get(pid)
+                
+                new_state = %{state |
+                  active_experiments: [experiment.id | state.active_experiments]
+                }
+                
+                Logger.info("[Pipeline] Created experiment: #{experiment.id} (#{solution.name})")
+                
+                {:reply, {:ok, %{
+                  experiment_id: experiment.id,
+                  solution: solution,
+                  ideation_result: ideation_result
+                }}, new_state}
+              
+              {:error, reason} ->
+                {:reply, {:error, reason}, state}
+            end
+        end
+      
+      {:error, reason} ->
+        {:reply, {:error, "Ideation failed: #{reason}"}, state}
     end
   end
 
