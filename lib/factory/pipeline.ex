@@ -14,7 +14,7 @@ defmodule Factory.Pipeline do
   use GenServer
   require Logger
 
-  alias Factory.{Experiment, Wallet}
+  alias Factory.{Experiment, Wallet, Critic}
 
   @check_interval_ms 60_000  # Check every minute
   @max_concurrent_experiments 3
@@ -182,23 +182,48 @@ defmodule Factory.Pipeline do
       true ->
         {{:value, idea}, new_queue} = :queue.out(state.idea_queue)
         
-        case Experiment.create(idea.hypothesis,
-               target_audience: idea.target_audience,
-               problem: idea.problem,
-               solution: idea.solution) do
-          {:ok, pid} ->
-            experiment_id = Experiment.get(pid).id
-            Logger.info("[Pipeline] Started experiment: #{experiment_id}")
-            
-            new_state = %{state |
-              idea_queue: new_queue,
-              active_experiments: [experiment_id | state.active_experiments]
-            }
-            
-            {:ok, experiment_id, new_state}
+        # Run through Critic first
+        case Critic.prescreen(idea.hypothesis) do
+          {:reject, reasons} ->
+            Logger.warning("[Pipeline] Idea rejected by prescreen: #{inspect(reasons)}")
+            # Remove from queue but don't start experiment
+            {:error, "Rejected by prescreen: #{Enum.join(reasons, ", ")}"}
           
-          {:error, reason} ->
-            {:error, reason}
+          :ok ->
+            # Full evaluation
+            case Critic.evaluate(idea.hypothesis,
+                   target_audience: idea.target_audience,
+                   problem: idea.problem,
+                   solution: idea.solution) do
+              {:ok, %{pass: false, score: score, feedback: feedback}} ->
+                Logger.warning("[Pipeline] Idea scored #{score}/100 (below threshold). Feedback: #{inspect(feedback)}")
+                {:error, "Critic score too low: #{score}/100"}
+              
+              {:ok, %{pass: true, score: score}} ->
+                Logger.info("[Pipeline] Idea passed critic with score #{score}/100")
+                
+                case Experiment.create(idea.hypothesis,
+                       target_audience: idea.target_audience,
+                       problem: idea.problem,
+                       solution: idea.solution) do
+                  {:ok, pid} ->
+                    experiment_id = Experiment.get(pid).id
+                    Logger.info("[Pipeline] Started experiment: #{experiment_id}")
+                    
+                    new_state = %{state |
+                      idea_queue: new_queue,
+                      active_experiments: [experiment_id | state.active_experiments]
+                    }
+                    
+                    {:ok, experiment_id, new_state}
+                  
+                  {:error, reason} ->
+                    {:error, reason}
+                end
+              
+              {:error, reason} ->
+                {:error, "Critic evaluation failed: #{reason}"}
+            end
         end
     end
   end
