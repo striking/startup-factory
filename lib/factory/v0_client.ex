@@ -7,8 +7,9 @@ defmodule Factory.V0Client do
   """
   require Logger
 
-  @base_url "https://api.v0.dev"
+  @base_url "https://api.v0.dev/v1"
   @timeout_ms 120_000  # 2 minutes - v0 can be slow
+  @model "v0-1.0-md"
 
   @doc """
   Generate a landing page from a prompt.
@@ -44,8 +45,10 @@ defmodule Factory.V0Client do
       """
       
       body = %{
-        prompt: enhanced_prompt,
-        model: "v0-1.0-md"  # v0's default model
+        model: @model,
+        messages: [
+          %{role: "user", content: enhanced_prompt}
+        ]
       }
       
       headers = [
