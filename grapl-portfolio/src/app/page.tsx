@@ -163,6 +163,86 @@ function IdeaForm() {
   );
 }
 
+function WaitlistForm() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
+    "idle",
+  );
+  const [errorMsg, setErrorMsg] = useState("");
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    setStatus("sending");
+    setErrorMsg("");
+
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          product: "grapl",
+          referrer: document.referrer || "",
+        }),
+      });
+
+      const data = await res.json().catch(() => ({ ok: res.ok }));
+
+      if (res.ok && data?.ok !== false) {
+        setStatus("sent");
+        setEmail("");
+        return;
+      }
+
+      setStatus("error");
+      setErrorMsg(data?.error || "Something went wrong.");
+    } catch {
+      setStatus("error");
+      setErrorMsg("Network error. Please try again.");
+    }
+  }
+
+  if (status == "sent") {
+    return (
+      <div className="text-center">
+        <h3 className="text-xl font-bold mb-2">You&apos;re on the waitlist.</h3>
+        <p className="text-[var(--text-muted)]">
+          We&apos;ll email you when new products launch.
+        </p>
+        <button
+          onClick={() => setStatus("idle")}
+          className="mt-4 text-[var(--accent)] hover:text-[var(--accent-hover)] underline underline-offset-4 cursor-pointer"
+        >
+          Add another email
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="flex flex-col sm:flex-row gap-3">
+        <input
+          type="email"
+          required
+          placeholder="Email for launch updates"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="flex-1 bg-[var(--bg-dark)] border border-[var(--border)] rounded-lg px-4 py-3 text-white placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors"
+        />
+        <button
+          type="submit"
+          disabled={status === "sending"}
+          className="bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 text-white font-semibold px-6 py-3 rounded-lg transition-colors cursor-pointer"
+        >
+          {status === "sending" ? "Joining..." : "Join waitlist"}
+        </button>
+      </div>
+      {errorMsg && <p className="text-red-400 text-sm">{errorMsg}</p>}
+    </form>
+  );
+}
+
 export default function Home() {
   return (
     <main className="min-h-screen">
@@ -360,6 +440,24 @@ export default function Home() {
           </div>
           <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 md:p-8">
             <IdeaForm />
+          </div>
+        </div>
+      </section>
+
+      
+      {/* Waitlist */}
+      <section className="border-t border-[var(--border)]">
+        <div className="max-w-3xl mx-auto px-6 py-20">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Get notified when new products ship
+            </h2>
+            <p className="text-[var(--text-muted)] max-w-xl mx-auto">
+              Join the Grapl waitlist for launch updates across the portfolio.
+            </p>
+          </div>
+          <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 md:p-8">
+            <WaitlistForm />
           </div>
         </div>
       </section>
