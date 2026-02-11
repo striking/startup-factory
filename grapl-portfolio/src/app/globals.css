@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+:root {
+  --accent: #FF6B35;
+  --accent-hover: #ff8555;
+  --bg-dark: #0a0a0f;
+  --bg-card: #12121a;
+  --bg-card-hover: #1a1a25;
+  --border: #1e1e2e;
+  --text-muted: #8888a0;
+}
+
+::selection {
+  background: var(--accent);
+  color: white;
+}
+
+body {
+  background: var(--bg-dark);
+}
