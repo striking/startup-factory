@@ -20,6 +20,35 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Supabase Setup
+
+Run the SQL files in the Supabase SQL editor (order matters):
+
+- `sql/2026-02-11_create_prospects.sql`
+- `sql/2026-02-11_create_prospect_touchpoints.sql`
+- `sql/2026-02-12_add_followup_scheduling.sql`
+- `sql/2026-02-11_create_idea_submissions.sql`
+
+## Environment Variables (API Route)
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY` (preferred) or `SUPABASE_ANON_KEY` (fallback)
+
+## Environment Variables (Import Script)
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY` (preferred; anon only works if RLS allows upserts)
+
+## Import Prospects
+
+```bash
+node scripts/import-prospects.js ./path/to/QuoteFollow.csv
+```
+
+## Relay Outreach Dashboard
+
+See `docs/relay-outreach-dashboard.md` for setup and usage.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
