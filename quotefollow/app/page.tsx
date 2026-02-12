@@ -7,49 +7,7 @@ import { Analytics } from '@vercel/analytics/react'
 const geist = Geist({ subsets: ['latin'] })
 
 export default function Page() {
-  const [email, setEmail] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitMessage, setSubmitMessage] = useState('')
   const [openFaq, setOpenFaq] = useState<number | null>(null)
-
-  // Waitlist API endpoint - deployed Google Apps Script web app
-  const WAITLIST_API_URL = "/api/waitlist";
-
-  const handleSubmit = async (e: React.FormEvent, source: string) => {
-    e.preventDefault()
-    if (!email) return
-
-    setIsSubmitting(true)
-    try {
-      // Get UTM params from URL
-      const urlParams = new URLSearchParams(window.location.search);
-
-      const response = await fetch(WAITLIST_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          product: 'quotefollow',
-          referrer: source || document.referrer || '',
-          utmSource: urlParams.get('utm_source') || '',
-          utmMedium: urlParams.get('utm_medium') || '',
-          utmCampaign: urlParams.get('utm_campaign') || ''
-        }),
-      })
-
-      if (response.ok) {
-        setSubmitMessage('Thanks! You\'re on the list. We\'ll be in touch soon.')
-        setEmail('')
-      } else {
-        setSubmitMessage('Something went wrong. Please try again.')
-      }
-    } catch (error) {
-      setSubmitMessage('Something went wrong. Please try again.')
-    }
-    setIsSubmitting(false)
-  }
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index)
@@ -67,45 +25,27 @@ export default function Page() {
             </div>
             
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
-              Stop losing jobs to silence
+              We chase your quotes for you
             </h1>
             
             <p className="text-xl sm:text-2xl text-slate-300 mb-8 max-w-3xl mx-auto leading-relaxed">
-              QuoteFollow automatically follows up on your quotes so you never lose another job to poor communication.
+              Done-for-you follow-up service. No dashboards. Set up in 24 hours.
             </p>
 
-            <form onSubmit={(e) => handleSubmit(e, 'hero')} className="max-w-md mx-auto mb-8">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  className="flex-1 px-4 py-3 rounded-lg bg-slate-800/50 border border-slate-700 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  required
-                />
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg font-medium transition-all transform hover:scale-105 disabled:opacity-50 disabled:transform-none"
-                >
-                  {isSubmitting ? 'Joining...' : 'Request Early Access'}
-                </button>
-              </div>
-              {submitMessage && (
-                <p className={`mt-3 text-sm ${submitMessage.includes('Thanks') ? 'text-green-400' : 'text-red-400'}`}>
-                  {submitMessage}
-                </p>
-              )}
-            </form>
+            <div className="mb-8">
+              <a
+                href="https://levasolutions.com.au/book"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg font-semibold transition-all transform hover:scale-105"
+              >
+                Book 15-min Setup Call
+              </a>
+            </div>
 
             <div className="flex items-center justify-center gap-2 text-slate-400">
-              <div className="flex -space-x-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500"></div>
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-blue-500"></div>
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500"></div>
-              </div>
-              <span className="text-sm">Request early access</span>
+              <div className="w-2 h-2 rounded-full bg-green-400"></div>
+              <span className="text-sm">Founding Offer now open</span>
             </div>
           </div>
         </div>
@@ -403,38 +343,24 @@ export default function Page() {
       {/* Final CTA */}
       <section className="py-24 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-blue-500/10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">Don't lose another job to silence</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">Ready to stop chasing quotes manually?</h2>
           <p className="text-xl text-slate-300 mb-8">
-            Join the waitlist now. Limited spots available for our early access program.
+            Book a quick setup call and we’ll show you how QuoteFollow works for your business.
           </p>
 
-          <form onSubmit={(e) => handleSubmit(e, 'final-cta')} className="max-w-md mx-auto mb-8">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-3 rounded-lg bg-slate-800/50 border border-slate-700 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                required
-              />
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg font-medium transition-all transform hover:scale-105 disabled:opacity-50 disabled:transform-none"
-              >
-                {isSubmitting ? 'Joining...' : 'Secure My Spot'}
-              </button>
-            </div>
-            {submitMessage && (
-              <p className={`mt-3 text-sm ${submitMessage.includes('Thanks') ? 'text-green-400' : 'text-red-400'}`}>
-                {submitMessage}
-              </p>
-            )}
-          </form>
+          <div className="mb-8">
+            <a
+              href="https://levasolutions.com.au/book"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg font-semibold transition-all transform hover:scale-105"
+            >
+              Book 15-min Setup Call
+            </a>
+          </div>
 
           <div className="text-sm text-slate-400">
-            ⚡ Request early access — limited spots available
+            ⚡ Founding Offer — limited onboarding spots each week
           </div>
         </div>
       </section>
