@@ -76,9 +76,8 @@ export async function POST(request: Request) {
       method: 'POST',
       headers: {
         ...supabaseHeaders,
-        Prefer: 'return=minimal',
         // If a unique constraint exists on email, keep UX smooth.
-        'Resolution-Prefer': 'merge-duplicates',
+        Prefer: 'return=minimal,resolution=merge-duplicates',
       },
       body: JSON.stringify({
         email,
