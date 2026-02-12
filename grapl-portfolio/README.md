@@ -26,8 +26,8 @@ Run the SQL files in the Supabase SQL editor (order matters):
 
 - `sql/2026-02-11_create_prospects.sql`
 - `sql/2026-02-11_create_prospect_touchpoints.sql`
-- `sql/2026-02-12_add_followup_scheduling.sql`
 - `sql/2026-02-11_create_idea_submissions.sql`
+- `sql/2026-02-12_add_followup_scheduling.sql`
 
 ## Environment Variables (API Route)
 
