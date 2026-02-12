@@ -83,7 +83,7 @@ def get_count(base_url: str, table: str, params: Params, headers: Dict[str, str]
             return int(content_range.split("/")[-1])
         except ValueError:
             pass
-    return len(data)
+    raise RuntimeError(f"Could not determine count for table '{table}'. Invalid or missing 'Content-Range' header: '{content_range}'")
 
 
 def fetch_rows(base_url: str, table: str, params: Params, headers: Dict[str, str]) -> List[Dict[str, Any]]:
