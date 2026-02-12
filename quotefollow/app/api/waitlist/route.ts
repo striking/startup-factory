@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://spwkdgmnedaqlkzpambv.supabase.co';
+const SUPABASE_URL = (process.env.SUPABASE_URL || 'https://spwkdgmnedaqlkzpambv.supabase.co').trim();
 
 // Prefer service role on the server to avoid requiring permissive RLS for public inserts.
 // Falls back to anon key if service role is not configured.
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
+const SUPABASE_SERVICE_ROLE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+const SUPABASE_ANON_KEY = (process.env.SUPABASE_ANON_KEY || '').trim();
 const SUPABASE_KEY = SUPABASE_SERVICE_ROLE_KEY || SUPABASE_ANON_KEY;
 
 function safeString(value: unknown, maxLen: number): string | null {
