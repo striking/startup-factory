@@ -28,3 +28,22 @@ Started: 2026-02-17T07:12+10:00
 - Updated vitest.config.ts to add jsdom url option for localStorage support
 - **Learnings:** jsdom in vitest needs `url: 'http://localhost'` in environmentOptions for localStorage to work, but even then the global localStorage may not have `.clear()`. Safest approach: use `vi.stubGlobal('localStorage', ...)` with a manual mock.
 ---
+
+## 2026-02-17 07:32 - US-003: Create defect form page with category dropdown and location field
+- Created app/defects/new/page.tsx as 'use client' component with category dropdown (6 options) and location input
+- Mobile-first layout with max-w-lg centered container
+- Created __tests__/new-defect-page.test.tsx with 3 tests (heading, dropdown options, location input)
+- All 9 tests passing, typecheck clean
+- **Learnings:** @testing-library/react works well with vitest jsdom for Next.js client components
+---
+
+## 2026-02-17 07:38 - US-004: Add severity rating, description, and photo upload fields
+- Added severity rating as 5 clickable buttons with aria-pressed and highlight styling
+- Added description textarea with placeholder
+- Added photo upload input (accept image/*) with FileReader base64 preview thumbnail
+- All fields use controlled state (useState)
+- Files changed: app/defects/new/page.tsx, __tests__/new-defect-page.test.tsx
+- 4 new tests: severity buttons render, severity highlight on click, description textarea, photo input
+- All 13 tests passing, typecheck clean
+- **Learnings:** aria-pressed + role="group" pattern works well for button-group selection widgets
+---
