@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type ChangeEvent, type FormEvent } from 'react';
+import Link from 'next/link';
 import type { DefectCategory, SeverityRating } from '../types';
 import { saveDefect } from '../storage';
 
@@ -57,6 +58,7 @@ export default function NewDefectPage() {
   return (
     <div className="min-h-screen p-4">
       <div className="mx-auto max-w-lg">
+        <Link href="/" className="text-sm text-blue-600 hover:underline mb-4 inline-block">← Back to Home</Link>
         <h1 className="text-2xl font-bold mb-6">Log Defect</h1>
         {toast && (
           <div
