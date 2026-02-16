@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, type ChangeEvent } from 'react';
-import type { SeverityRating } from '../types';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
+import type { DefectCategory, SeverityRating } from '../types';
+import { saveDefect } from '../storage';
 
 const CATEGORIES = [
   'structural',
@@ -20,6 +21,28 @@ export default function NewDefectPage() {
   const [severity, setSeverity] = useState<SeverityRating | null>(null);
   const [description, setDescription] = useState('');
   const [photo, setPhoto] = useState<string | null>(null);
+  const [toast, setToast] = useState(false);
+
+  function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!category || !location || !severity) return;
+    saveDefect({
+      id: crypto.randomUUID(),
+      photo,
+      category: category as DefectCategory,
+      location,
+      severity,
+      description,
+      createdAt: new Date().toISOString(),
+    });
+    setCategory('');
+    setLocation('');
+    setSeverity(null);
+    setDescription('');
+    setPhoto(null);
+    setToast(true);
+    setTimeout(() => setToast(false), 3000);
+  }
 
   function handlePhotoChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -35,7 +58,15 @@ export default function NewDefectPage() {
     <div className="min-h-screen p-4">
       <div className="mx-auto max-w-lg">
         <h1 className="text-2xl font-bold mb-6">Log Defect</h1>
-        <form className="space-y-4">
+        {toast && (
+          <div
+            role="alert"
+            className="fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg z-50"
+          >
+            Defect logged successfully
+          </div>
+        )}
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="category" className="block text-sm font-medium mb-1">
               Category
@@ -44,6 +75,7 @@ export default function NewDefectPage() {
               id="category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
+              required
               className="w-full border rounded-md p-2"
             >
               <option value="">Select category</option>
@@ -63,6 +95,7 @@ export default function NewDefectPage() {
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
+              required
               placeholder="e.g. Level 3, Unit 5, Bathroom"
               className="w-full border rounded-md p-2"
             />
@@ -119,6 +152,12 @@ export default function NewDefectPage() {
               />
             )}
           </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded-md font-medium"
+          >
+            Submit Defect
+          </button>
         </form>
       </div>
     </div>
