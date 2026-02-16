@@ -47,3 +47,21 @@ Started: 2026-02-17T07:12+10:00
 - All 13 tests passing, typecheck clean
 - **Learnings:** aria-pressed + role="group" pattern works well for button-group selection widgets
 ---
+
+## 2026-02-17 07:48 - US-005: Wire form submission to localStorage with success toast
+- Added handleSubmit: validates required fields, calls saveDefect, resets form, shows toast
+- Added success toast (role="alert", fixed positioning, auto-dismiss 3s via setTimeout)
+- Added HTML5 required on category select and location input
+- Added Submit Defect button
+- Created __tests__/form-submission.test.tsx with 5 tests
+- Files changed: app/defects/new/page.tsx, __tests__/form-submission.test.tsx
+- **Learnings:** queryAllByRole vs getAllByRole - former returns empty array, latter throws when no matches
+---
+
+## 2026-02-17 07:58 - US-006: Add navigation link and final polish
+- Added "Log Defect" button in top nav of landing page linking to /defects/new
+- Added "← Back to Home" link on defect form page linking to /
+- Created __tests__/navigation.test.tsx with 2 tests verifying both navigation links
+- All 20 tests passing, build succeeds
+- Files changed: app/page.tsx, app/defects/new/page.tsx, __tests__/navigation.test.tsx
+---
