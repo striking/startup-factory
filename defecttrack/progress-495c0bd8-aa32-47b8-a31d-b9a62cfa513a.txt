@@ -1,0 +1,30 @@
+# Progress Log
+Run: 495c0bd8-aa32-47b8-a31d-b9a62cfa513a
+Task: Add a defect submission form to DefectTrack
+Started: 2026-02-17T07:12+10:00
+
+## Codebase Patterns
+- Next.js app router in defecttrack/app/
+- Tailwind CSS v4 with @tailwindcss/postcss
+- React 19, Next.js 16
+- Tests: vitest with jsdom, run `npm run test`
+- Test files in __tests__/ directory
+
+---
+
+## 2026-02-17 07:13 - US-001: Add vitest test framework and basic config
+- Installed vitest, @testing-library/react, @testing-library/jest-dom, jsdom as devDependencies
+- Created vitest.config.ts with jsdom environment and globals enabled
+- Added "test": "vitest run" script to package.json
+- Created __tests__/smoke.test.ts with 2 passing tests (arithmetic + jsdom environment check)
+- Files changed: vitest.config.ts, package.json, package-lock.json, __tests__/smoke.test.ts
+- **Learnings:** Monorepo structure - git root is parent of defecttrack/
+---
+
+## 2026-02-17 07:23 - US-002: Define defect TypeScript types and localStorage helpers
+- Created app/defects/types.ts with Defect interface, DefectCategory union, SeverityRating type
+- Created app/defects/storage.ts with saveDefect() and getDefects() using localStorage key 'defecttrack_defects'
+- Created __tests__/storage.test.ts with 4 tests covering empty state, invalid JSON, save, and append
+- Updated vitest.config.ts to add jsdom url option for localStorage support
+- **Learnings:** jsdom in vitest needs `url: 'http://localhost'` in environmentOptions for localStorage to work, but even then the global localStorage may not have `.clear()`. Safest approach: use `vi.stubGlobal('localStorage', ...)` with a manual mock.
+---
