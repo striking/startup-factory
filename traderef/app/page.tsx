@@ -95,8 +95,44 @@ export default function Page() {
 
   return (
     <div className={`min-h-screen bg-slate-950 text-white ${geist.className}`}>
+      {/* Navigation */}
+      <nav className="border-b border-slate-800">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">TR</span>
+              </div>
+              <span className="font-semibold">TradeRef</span>
+            </div>
+            
+            <div className="hidden md:flex items-center space-x-6">
+              <a 
+                href="/electrician-salary" 
+                className="text-slate-300 hover:text-emerald-400 transition-colors font-medium"
+              >
+                Electrician Salaries
+              </a>
+              <a 
+                href="#waitlist" 
+                className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-lg hover:from-emerald-600 hover:to-emerald-700 transition-all"
+              >
+                Get Early Access
+              </a>
+            </div>
+            
+            {/* Mobile menu button */}
+            <button className="md:hidden text-slate-300">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </nav>
+
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
+      <section id="waitlist" className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-slate-950"></div>
         <div className="relative max-w-6xl mx-auto px-4 py-20 sm:py-32">
           <div className="text-center space-y-8">
