@@ -3,6 +3,7 @@
 import { Geist } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/react'
 import { useState } from 'react'
+import Link from 'next/link'
 
 const geist = Geist({ subsets: ['latin'] })
 
@@ -57,6 +58,12 @@ export default function Page() {
 
   return (
     <div className={`${geist.className} min-h-screen bg-slate-950 text-white`}>
+      {/* Navigation */}
+      <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 flex justify-end">
+        <Link href="/defects/new" className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors duration-200">
+          Log Defect
+        </Link>
+      </nav>
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 via-transparent to-transparent"></div>
