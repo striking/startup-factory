@@ -42,14 +42,15 @@ export async function POST(request: Request) {
 
   try {
     const body: unknown = await request.json();
+    const payload = body as any;
 
-    const email = normalizeEmail((body as any)?.email);
-    const name = safeString((body as any)?.name, 128);
-    const product = safeString((body as any)?.product, 64);
-    const referrer = safeString((body as any)?.referrer, 1024);
-    const utmSource = safeString((body as any)?.utmSource, 128);
-    const utmMedium = safeString((body as any)?.utmMedium, 128);
-    const utmCampaign = safeString((body as any)?.utmCampaign, 256);
+    const email = normalizeEmail(payload?.email);
+    const name = safeString(payload?.name, 128);
+    const product = safeString(payload?.product, 64);
+    const referrer = safeString(payload?.referrer, 1024);
+    const utmSource = safeString(payload?.utmSource, 128);
+    const utmMedium = safeString(payload?.utmMedium, 128);
+    const utmCampaign = safeString(payload?.utmCampaign, 256);
 
     if (!email) {
       return NextResponse.json({ error: 'Valid email is required' }, { status: 400 });
@@ -81,13 +82,13 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({
         email,
-        name: name || null,
+        name,
         product_id: productId,
         source: 'waitlist',
-        referrer: referrer || null,
-        utm_source: utmSource || null,
-        utm_medium: utmMedium || null,
-        utm_campaign: utmCampaign || null,
+        referrer,
+        utm_source: utmSource,
+        utm_medium: utmMedium,
+        utm_campaign: utmCampaign,
       }),
     });
 
