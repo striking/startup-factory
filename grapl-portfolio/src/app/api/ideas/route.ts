@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { resolveSupabaseConfig } from "@/lib/supabase";
 
 export const runtime = "nodejs";
 
@@ -17,27 +18,7 @@ function firstForwardedIp(value: string | null): string | null {
   return first ? first : null;
 }
 
-function resolveSupabaseConfig(): { url: string; key: string } | { error: string } {
-  const url = process.env.SUPABASE_URL?.trim();
-  if (!url) {
-    return { error: "Missing SUPABASE_URL environment variable." };
-  }
-
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-  if (serviceRoleKey) {
-    return { url, key: serviceRoleKey };
-  }
-
-  const anonKey = process.env.SUPABASE_ANON_KEY?.trim();
-  if (anonKey) {
-    return { url, key: anonKey };
-  }
-
-  return {
-    error:
-      "Missing SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_ANON_KEY fallback) environment variable.",
-  };
-}
+// Supabase configuration is now handled by shared utility in @/lib/supabase
 
 export async function POST(request: Request) {
   let payload: unknown;
@@ -72,6 +53,14 @@ export async function POST(request: Request) {
   if (!emailInput) {
     return NextResponse.json(
       { ok: false, error: "Email is required." },
+      { status: 400 },
+    );
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(emailInput)) {
+    return NextResponse.json(
+      { ok: false, error: "Please enter a valid email address." },
       { status: 400 },
     );
   }

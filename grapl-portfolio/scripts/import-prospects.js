@@ -1,6 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { parse } = require("csv-parse/sync");
+const { resolveSupabaseConfigThrows } = require("../src/lib/supabase");
 
 const BATCH_SIZE = 500;
 
@@ -28,26 +29,7 @@ function parseInteger(value) {
   return Number.isFinite(num) ? num : null;
 }
 
-function resolveSupabaseConfig() {
-  const url = process.env.SUPABASE_URL?.trim();
-  if (!url) {
-    throw new Error("Missing SUPABASE_URL environment variable.");
-  }
-
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-  if (serviceRoleKey) {
-    return { url, key: serviceRoleKey };
-  }
-
-  const anonKey = process.env.SUPABASE_ANON_KEY?.trim();
-  if (anonKey) {
-    return { url, key: anonKey };
-  }
-
-  throw new Error(
-    "Missing SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_ANON_KEY fallback) environment variable.",
-  );
-}
+// Supabase configuration is now handled by shared utility
 
 async function main() {
   const inputPath = process.argv[2];
@@ -72,7 +54,7 @@ async function main() {
   });
 
   const { createClient } = await import("@supabase/supabase-js");
-  const config = resolveSupabaseConfig();
+  const config = resolveSupabaseConfigThrows();
   const supabase = createClient(config.url, config.key, {
     auth: { persistSession: false },
   });

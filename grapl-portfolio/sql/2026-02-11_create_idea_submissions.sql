@@ -27,7 +27,7 @@ create table if not exists public.idea_submissions (
 
   -- User input
   idea text not null,
-  email text not null,
+  email text not null check (email ~ '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'),
   name text,
 
   -- App metadata
