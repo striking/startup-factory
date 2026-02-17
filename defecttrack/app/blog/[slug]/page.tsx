@@ -2,7 +2,7 @@ import { getAllSlugs, getPost } from "@/lib/blog";
 import type { Metadata } from "next";
 
 interface Props {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
 }
 
 export async function generateStaticParams() {
@@ -10,7 +10,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug } = params;
   const post = await getPost(slug);
   return {
     title: `${post.title} — DefectTrack`,
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function BlogPost({ params }: Props) {
-  const { slug } = await params;
+  const { slug } = params;
   const post = await getPost(slug);
   return (
     <main className="mx-auto max-w-3xl px-4 py-16">

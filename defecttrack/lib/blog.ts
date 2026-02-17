@@ -27,7 +27,7 @@ export async function getPost(slug: string): Promise<BlogPost> {
   const filePath = path.join(contentDir, `${slug}.md`);
   const raw = fs.readFileSync(filePath, "utf8");
   const { data, content } = matter(raw);
-  const result = await remark().use(html).process(content);
+  const result = await remark().use(html, { sanitize: true }).process(content);
   return {
     slug: data.slug || slug,
     title: data.title,

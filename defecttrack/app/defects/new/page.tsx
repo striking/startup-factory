@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ChangeEvent, type FormEvent } from 'react';
+import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react';
 import Link from 'next/link';
 import type { DefectCategory, SeverityRating } from '../types';
 import { saveDefect } from '../storage';
@@ -23,26 +23,57 @@ export default function NewDefectPage() {
   const [description, setDescription] = useState('');
   const [photo, setPhoto] = useState<string | null>(null);
   const [toast, setToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastError, setToastError] = useState(false);
+
+  // Handle toast auto-dismissal with proper cleanup
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => {
+        setToast(false);
+        setToastError(false);
+        setToastMessage('');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!category || !location || !severity) return;
-    saveDefect({
-      id: crypto.randomUUID(),
-      photo,
-      category: category as DefectCategory,
-      location,
-      severity,
-      description,
-      createdAt: new Date().toISOString(),
-    });
-    setCategory('');
-    setLocation('');
-    setSeverity(null);
-    setDescription('');
-    setPhoto(null);
-    setToast(true);
-    setTimeout(() => setToast(false), 3000);
+    
+    try {
+      saveDefect({
+        id: crypto.randomUUID(),
+        photo,
+        category: category as DefectCategory,
+        location,
+        severity,
+        description,
+        createdAt: new Date().toISOString(),
+      });
+      
+      // Success - reset form and show success toast
+      setCategory('');
+      setLocation('');
+      setSeverity(null);
+      setDescription('');
+      setPhoto(null);
+      setToastMessage('Defect logged successfully');
+      setToastError(false);
+      setToast(true);
+    } catch (error) {
+      // Handle localStorage size limit or other errors
+      let message = 'Failed to save defect';
+      if (error instanceof Error && error.message.includes('QuotaExceededError')) {
+        message = 'Photo too large for storage. Please use a smaller image.';
+      } else if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+        message = 'Photo too large for storage. Please use a smaller image.';
+      }
+      setToastMessage(message);
+      setToastError(true);
+      setToast(true);
+    }
   }
 
   function handlePhotoChange(e: ChangeEvent<HTMLInputElement>) {
@@ -63,9 +94,11 @@ export default function NewDefectPage() {
         {toast && (
           <div
             role="alert"
-            className="fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg z-50"
+            className={`fixed top-4 right-4 text-white px-4 py-2 rounded-md shadow-lg z-50 ${
+              toastError ? 'bg-red-600' : 'bg-green-600'
+            }`}
           >
-            Defect logged successfully
+            {toastMessage}
           </div>
         )}
         <form className="space-y-4" onSubmit={handleSubmit}>
